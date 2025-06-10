@@ -189,7 +189,6 @@ export function BarcodeScanner({ orderId, onComplete, onCancel }) {
                       containerStyle={{ width: "100%", height: "300px" }}
                       videoContainerStyle={{ width: "100%", height: "100%" }}
                       videoStyle={{ width: "100%", height: "100%" }}
-                      constraints={{ facingMode: { ideal: "environment" } }} // fallback to best available
                       onResult={(result, error) => {
                         if (!!result) {
                           handleQrScan(result?.text);
@@ -200,7 +199,6 @@ export function BarcodeScanner({ orderId, onComplete, onCancel }) {
                       }}
                     />
                   </div>
-
                   <p className="text-xs text-gray-500">
                     Position the QR code within the frame to scan.
                   </p>
