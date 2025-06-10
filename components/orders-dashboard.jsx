@@ -127,8 +127,32 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
   //   setSelectedOrderId("");
   // };
 
+  // const handleScanComplete = async (code) => {
+  //   console.log(`Scanned code: ${code} for order: ${selectedOrderId}`);
+
+  //   try {
+  //     await updateOrderStatus(selectedOrderId, "Delivered");
+  //     await fetchOrders();
+  //     setDeliveredCount((prevCount) => prevCount + 1);
+  //     setSuccessMessage(`Order ${selectedOrderId} marked as delivered!`);
+  //     setTimeout(() => setSuccessMessage(""), 3000);
+
+  //     // Hide scanner & reset selection
+  //     setShowScanner(false);
+  //     setSelectedOrderId("");
+  //   } catch (err) {
+  //     console.error("Error updating status:", err);
+  //     setShowScanner(false); // Hide scanner even on error
+  //   }
+  // };
+
   const handleScanComplete = async (code) => {
-    console.log(`Scanned code: ${code} for order: ${selectedOrderId}`);
+    if (!selectedOrderId) {
+      console.error("No order selected!");
+      toast.error("No order selected.");
+      setShowScanner(false);
+      return;
+    }
 
     try {
       await updateOrderStatus(selectedOrderId, "Delivered");
@@ -137,12 +161,12 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
       setSuccessMessage(`Order ${selectedOrderId} marked as delivered!`);
       setTimeout(() => setSuccessMessage(""), 3000);
 
-      // Hide scanner & reset selection
       setShowScanner(false);
       setSelectedOrderId("");
     } catch (err) {
       console.error("Error updating status:", err);
-      setShowScanner(false); // Hide scanner even on error
+      toast.error("Failed to update order status.");
+      setShowScanner(false);
     }
   };
 
@@ -270,7 +294,7 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
                       <TableCell>${order.orderValue.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {order.status === "pending" && (
+                          {order.status === "picked" && (
                             <Button
                               size="sm"
                               onClick={() =>
