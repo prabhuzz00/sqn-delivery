@@ -184,12 +184,12 @@ export function BarcodeScanner({ orderId, onComplete, onCancel }) {
 
               <TabsContent value="camera" className="space-y-4">
                 <div className="text-center space-y-4">
-                  <div className="w-full max-w-xs mx-auto border-2 border-dashed border-gray-300 bg-black rounded">
+                  <div className="w-full max-w-xs mx-auto border-2 border-dashed border-gray-300 bg-black">
                     <QrReader
-                      constraints={{ facingMode: "environment" }}
-                      containerStyle={{ width: "100%", height: "300px" }} // set a height!
-                      videoContainerStyle={{ width: "100%", height: "100%" }} // fill the container
-                      videoStyle={{ width: "100%", height: "100%" }} // fill
+                      containerStyle={{ width: "100%", height: "300px" }}
+                      videoContainerStyle={{ width: "100%", height: "100%" }}
+                      videoStyle={{ width: "100%", height: "100%" }}
+                      constraints={{ facingMode: { ideal: "environment" } }} // fallback to best available
                       onResult={(result, error) => {
                         if (!!result) {
                           handleQrScan(result?.text);
@@ -200,6 +200,7 @@ export function BarcodeScanner({ orderId, onComplete, onCancel }) {
                       }}
                     />
                   </div>
+
                   <p className="text-xs text-gray-500">
                     Position the QR code within the frame to scan.
                   </p>
