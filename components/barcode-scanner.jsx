@@ -11,7 +11,10 @@ import { toast } from "sonner";
 import { getOrderById } from "@/lib/api";
 import dynamic from "next/dynamic";
 
-const QrReader = dynamic(() => import("react-qr-reader"), { ssr: false });
+const QrReader = dynamic(
+  () => import("react-qr-reader").then((mod) => mod.default || mod.QrReader),
+  { ssr: false }
+);
 
 export function BarcodeScanner({ orderId, onComplete, onCancel }) {
   const [manualCode, setManualCode] = useState("");
