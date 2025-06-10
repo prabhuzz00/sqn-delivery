@@ -104,6 +104,8 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
         return "Delivered";
       case "out_for_delivery":
         return "Out for Delivery";
+      case "Out for Delivery":
+        return "Out for Delivery";
       case "pending":
         return "Pending";
       case "picked":
@@ -267,7 +269,7 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
                       <TableCell>${order.orderValue.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {order.status === "picked" && (
+                          {order.status === "pending" && (
                             <Button
                               size="sm"
                               onClick={() =>
