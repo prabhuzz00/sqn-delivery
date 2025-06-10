@@ -38,16 +38,6 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
   const fetchOrders = async () => {
     try {
       const res = await getMyOrders(deliveryBoyId);
-      // setOrders(
-      //   res.data.map((order) => ({
-      //     id: order._id,
-      //     customerName: order.userId?.name || "N/A",
-      //     customerPhone: order.delivery_address?.mobile || "N/A",
-      //     deliveryAddress: `${order.delivery_address?.address_line1}, ${order.delivery_address?.city}`,
-      //     status: order.deliveryStatus.toLowerCase(),
-      //     orderValue: order.totalAmt,
-      //   }))
-      // );
       setOrders(
         res.data.map((order) => {
           const addr = order.delivery_address ?? {};
@@ -120,9 +110,25 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
     setShowScanner(true);
   };
 
+  // const handleScanComplete = async (code) => {
+  //   console.log(`Scanned code: ${code} for order: ${selectedOrderId}`);
+  //   setShowScanner(false);
+
+  //   try {
+  //     await updateOrderStatus(selectedOrderId, "Delivered");
+  //     await fetchOrders();
+  //     setDeliveredCount((prevCount) => prevCount + 1);
+  //     setSuccessMessage(`Order ${selectedOrderId} marked as delivered!`);
+  //     setTimeout(() => setSuccessMessage(""), 3000);
+  //   } catch (err) {
+  //     console.error("Error updating status:", err);
+  //   }
+
+  //   setSelectedOrderId("");
+  // };
+
   const handleScanComplete = async (code) => {
     console.log(`Scanned code: ${code} for order: ${selectedOrderId}`);
-    setShowScanner(false);
 
     try {
       await updateOrderStatus(selectedOrderId, "Delivered");
@@ -130,21 +136,16 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
       setDeliveredCount((prevCount) => prevCount + 1);
       setSuccessMessage(`Order ${selectedOrderId} marked as delivered!`);
       setTimeout(() => setSuccessMessage(""), 3000);
+
+      // Hide scanner & reset selection
+      setShowScanner(false);
+      setSelectedOrderId("");
     } catch (err) {
       console.error("Error updating status:", err);
+      setShowScanner(false); // Hide scanner even on error
     }
-
-    setSelectedOrderId("");
   };
 
-  // const updateOrderStatusHandler = async (orderId, newStatus) => {
-  //   try {
-  //     await updateOrderStatus(orderId, newStatus);
-  //     await fetchOrders();
-  //   } catch (err) {
-  //     console.error("Error updating status:", err);
-  //   }
-  // };
   const updateOrderStatusHandler = async (orderId, newStatus) => {
     try {
       // ① hit PUT /api/deliveryboy/order/:id/status
