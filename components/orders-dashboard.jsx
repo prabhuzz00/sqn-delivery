@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,15 +38,47 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
   const fetchOrders = async () => {
     try {
       const res = await getMyOrders(deliveryBoyId);
+      // setOrders(
+      //   res.data.map((order) => ({
+      //     id: order._id,
+      //     customerName: order.userId?.name || "N/A",
+      //     customerPhone: order.delivery_address?.mobile || "N/A",
+      //     deliveryAddress: `${order.delivery_address?.address_line1}, ${order.delivery_address?.city}`,
+      //     status: order.deliveryStatus.toLowerCase(),
+      //     orderValue: order.totalAmt,
+      //   }))
+      // );
       setOrders(
-        res.data.map((order) => ({
-          id: order._id,
-          customerName: order.userId?.name || "N/A",
-          customerPhone: order.delivery_address?.mobile || "N/A",
-          deliveryAddress: `${order.delivery_address?.address_line1}, ${order.delivery_address?.city}`,
-          status: order.deliveryStatus.toLowerCase(),
-          orderValue: order.totalAmt,
-        }))
+        res.data.map((order) => {
+          const addr = order.delivery_address ?? {};
+          const user = order.userId ?? {};
+
+          return {
+            id: order._id,
+            customerName: user.name ?? "N/A",
+
+            customerPhone:
+              addr.mobile ?? // preferred
+              user.phone ?? // fall-back
+              "N/A",
+
+            deliveryAddress:
+              [
+                addr.address_line1,
+                addr.city,
+                addr.pincode, // remove if not required
+              ]
+                .filter(Boolean)
+                .join(", ") || "N/A",
+
+            /* normalise status once so the rest of the UI just works */
+            status: (order.deliveryStatus || order.order_status || "Pending")
+              .replace(/\s+/g, "_") // "Out for Delivery" → "Out_for_Delivery"
+              .toLowerCase(),
+
+            orderValue: order.totalAmt ?? 0,
+          };
+        })
       );
     } catch (err) {
       console.error("Error fetching orders:", err);
@@ -75,6 +106,8 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
         return "Out for Delivery";
       case "pending":
         return "Pending";
+      case "picked":
+        return "Picked";
       default:
         return "Unknown";
     }
@@ -102,9 +135,24 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
     setSelectedOrderId("");
   };
 
+  // const updateOrderStatusHandler = async (orderId, newStatus) => {
+  //   try {
+  //     await updateOrderStatus(orderId, newStatus);
+  //     await fetchOrders();
+  //   } catch (err) {
+  //     console.error("Error updating status:", err);
+  //   }
+  // };
   const updateOrderStatusHandler = async (orderId, newStatus) => {
     try {
+      // ① hit PUT /api/deliveryboy/order/:id/status
       await updateOrderStatus(orderId, newStatus);
+
+      // ② show feedback
+      setSuccessMessage(`Order ${orderId} is now "${newStatus}"`);
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+      // ③ reload table
       await fetchOrders();
     } catch (err) {
       console.error("Error updating status:", err);
@@ -219,7 +267,7 @@ export function OrdersDashboard({ deliveryPerson, deliveryBoyId, onLogout }) {
                       <TableCell>${order.orderValue.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {order.status === "pending" && (
+                          {order.status === "picked" && (
                             <Button
                               size="sm"
                               onClick={() =>
