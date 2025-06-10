@@ -11,11 +11,7 @@ import { toast } from "sonner";
 import { getOrderById } from "@/lib/api";
 import dynamic from "next/dynamic";
 
-// Dynamically load the QR reader
-const QrReader = dynamic(
-  () => import("@blackbox-vision/react-qr-reader").then((mod) => mod.QrReader),
-  { ssr: false }
-);
+const QrReader = dynamic(() => import("react-qr-reader"), { ssr: false });
 
 export function BarcodeScanner({ orderId, onComplete, onCancel }) {
   const [manualCode, setManualCode] = useState("");
@@ -186,15 +182,12 @@ export function BarcodeScanner({ orderId, onComplete, onCancel }) {
                 <div className="text-center space-y-4">
                   <div className="w-full max-w-xs mx-auto border-2 border-dashed border-gray-300 bg-black">
                     <QrReader
-                      containerStyle={{ width: "100%", height: "300px" }}
-                      videoContainerStyle={{ width: "100%", height: "100%" }}
-                      videoStyle={{ width: "100%", height: "100%" }}
-                      onResult={(result, error) => {
-                        if (!!result) {
-                          handleQrScan(result?.text);
-                        }
-                        if (!!error) {
-                          console.error(error);
+                      delay={300}
+                      style={{ width: "100%", height: "300px" }}
+                      onError={(err) => console.error("QR error:", err)}
+                      onScan={(data) => {
+                        if (data) {
+                          handleQrScan(data);
                         }
                       }}
                     />
